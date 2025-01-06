@@ -34,13 +34,32 @@ function buscarVacinas($conn, $pesquisa = '') {
     return $stmt->get_result();
 }
 
-// Função para excluir a vacina
+// Função para excluir a vacina e a imagem associada
 function excluirVacina($conn, $id) {
-    // Verifique se a vacina existe antes de excluir
-    $sql = "DELETE FROM Vacina WHERE id = ?";
+    // Busca o caminho da imagem associada à vacina
+    $sql = "SELECT url_imagem FROM Vacina WHERE id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param('i', $id);
-    return $stmt->execute();
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        $vacina = $result->fetch_assoc();
+        $caminhoImagem = $vacina['url_imagem'];
+
+        // Excluir o arquivo de imagem
+        if (file_exists($caminhoImagem)) {
+            unlink($caminhoImagem); // Remove a imagem do servidor
+        }
+
+        // Excluir a vacina do banco de dados
+        $sqlDelete = "DELETE FROM Vacina WHERE id = ?";
+        $stmtDelete = $conn->prepare($sqlDelete);
+        $stmtDelete->bind_param('i', $id);
+        return $stmtDelete->execute();
+    }
+
+    return false; // Retorna falso se a vacina não foi encontrada
 }
 
 // Verificar se a requisição AJAX foi feita para excluir a vacina
