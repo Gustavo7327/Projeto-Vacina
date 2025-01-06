@@ -5,7 +5,7 @@ $password = 'Gustavo7327';
 $dbname = 'vacineja';
 
 // Criando conexão com o banco de dados
-$conn = new mysqli($servername, $user, $password, $dbname);
+$conn = new mysqli($host, $user, $password, $dbname);
 
 // Verificando a conexão
 if ($conn->connect_error) {
@@ -34,11 +34,11 @@ function verificarLogin($email, $senha) {
         // Verificando se a senha corresponde (comparação segura usando password_verify)
         if (password_verify($senha, $row['senha'])) {
             // Login bem-sucedido
-            // Salvar os dados do usuário na sessão, sem erro, independente de admin_prefeitura
+            // Salvar os dados do usuário na sessão
             $_SESSION['id'] = $row['id'];
             $_SESSION['email'] = $row['email'];
             $_SESSION['admin_prefeitura'] = $row['admin_prefeitura'];
-            $_SESSION['id_posto'] = $row['id_posto']; // Armazenar admin_prefeitura para controle de permissões
+            $_SESSION['id_posto'] = $row['id_posto']; // Armazenando o ID do posto na sessão
 
             return ['success' => true];
         } else {
@@ -51,20 +51,19 @@ function verificarLogin($email, $senha) {
     }
 }
 
-// Exemplo de uso:
+// Tratamento do formulário de login
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Recebendo os dados do formulário
-    $email = $_POST['email'];
-    $senha = $_POST['senha'];
+    $email = $_POST['email'] ?? '';
+    $senha = $_POST['senha'] ?? '';
 
     // Verificando o login
     $loginResult = verificarLogin($email, $senha);
 
     if ($loginResult['success']) {
-
         // Redirecionar para a página de dashboard ou painel
         header("Location: ../Catalogo-Vacinas-ADM/index.php");
-
+        exit();
     } else {
         // Exibindo a mensagem de erro
         echo "Erro: " . $loginResult['message'];
