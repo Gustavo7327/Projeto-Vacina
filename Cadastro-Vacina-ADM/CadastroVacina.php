@@ -35,33 +35,36 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $uploadSucesso = false;
 
     // Verifica se o arquivo foi carregado
-    if (isset($_FILES['arquivo']) && $_FILES['arquivo']['error'] == 0) {
-        // Diretório de destino para o upload
-        $diretorioDestino = '../uploads/';
+if (isset($_FILES['arquivo']) && $_FILES['arquivo']['error'] == 0) {
+    // Diretório de destino para o upload
+    $diretorioDestino = '../uploads/';
 
-        // Cria o diretório de destino, se necessário
-        if (!is_dir($diretorioDestino)) {
-            if (!mkdir($diretorioDestino, 0777, true)) {
-                redirecionarErro("Erro ao criar o diretório de upload.");
-            }
-        }
-
-        // Caminho do arquivo
-        $nomeArquivo = $_FILES['arquivo']['name'];
-        $caminhoDestino = $diretorioDestino . $nomeArquivo;
-
-        // Verifica se o arquivo já existe
-        if (file_exists($caminhoDestino)) {
-            $url_imagem = $caminhoDestino; // Reutiliza o caminho do arquivo existente
-            $uploadSucesso = true;
-        } else {
-            // Move o arquivo do diretório temporário para o destino final
-            if (move_uploaded_file($_FILES['arquivo']['tmp_name'], $caminhoDestino)) {
-                $url_imagem = $caminhoDestino;
-                $uploadSucesso = true;
-            }
+    // Cria o diretório de destino, se necessário
+    if (!is_dir($diretorioDestino)) {
+        if (!mkdir($diretorioDestino, 0777, true)) {
+            redirecionarErro("Erro ao criar o diretório de upload.");
         }
     }
+
+    // Nome original do arquivo e sua extensão
+    $nomeOriginal = pathinfo($_FILES['arquivo']['name'], PATHINFO_FILENAME);
+    $extensao = pathinfo($_FILES['arquivo']['name'], PATHINFO_EXTENSION);
+
+    // Gerar um nome único usando datetime e o nome original
+    $dataHoraAtual = date('Ymd_His'); // Formato: YYYYMMDD_HHMMSS
+    $nomeArquivoUnico = $dataHoraAtual . '_' . preg_replace('/[^a-zA-Z0-9_-]/', '_', $nomeOriginal) . '.' . $extensao;
+
+    // Caminho completo para salvar o arquivo
+    $caminhoDestino = $diretorioDestino . $nomeArquivoUnico;
+
+    // Move o arquivo do diretório temporário para o destino final
+    if (move_uploaded_file($_FILES['arquivo']['tmp_name'], $caminhoDestino)) {
+        $url_imagem = $caminhoDestino;
+        $uploadSucesso = true;
+    } else {
+        redirecionarErro("Erro ao mover o arquivo para o destino.");
+    }
+}
 
     // Verifica se todos os campos foram preenchidos
     if (!empty($nome) && !empty($descricao) && !empty($dataHora) && !empty($id_posto) && !empty($idade_recomendada) && $uploadSucesso) {
