@@ -101,7 +101,7 @@ if (isset($_GET['id'])) {
         </div>
       </div>
     </div>
-    <form class="frame-57" method="post" action="vacina_processo.php">
+    <form class="frame-57" method="post" action="vacina_processo.php" enctype="multipart/form-data">
       <div class="arq">
         <label for="arquivo">
           <input type="file" id="arquivo" name="arquivo">
