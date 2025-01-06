@@ -47,7 +47,7 @@
 <body>
     <div class="container">
         <h1>Menu de Navegação</h1>
-        <a href="Login/index.html">Login</a>
+        <a href="Login/index.php">Login</a>
         <a href="Catalogo/index.php">Catálogo do Usuário</a>
         <a href="Catalogo-Vacinas-ADM/index.php">Catálogo do ADM (login necessário)</a>
         <a href="Cadastro/index.php">Cadastro de ADM (admin_prefeitura necessário)</a>
