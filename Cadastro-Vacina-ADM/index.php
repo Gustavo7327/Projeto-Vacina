@@ -3,6 +3,10 @@ session_start();
 if(!isset($_SESSION['email'])){
     header('Location: ../Login/index.php');
 }
+if($_SESSION['admin_prefeitura'] == 1){
+  $_SESSION['erro'] = 'Você não pode cadastrar vacinas, apenas administradores do posto.';
+  header('Location: ../error.php');
+}
 // Dados de conexão com o banco de dados
 $host = 'localhost';
 $user = 'gustavo';
