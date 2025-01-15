@@ -34,29 +34,35 @@ function buscarVacinas($conn, $pesquisa = '') {
     return $stmt->get_result();
 }
 
-// Função para excluir a vacina e a imagem associada
-function excluirVacina($conn, $id) {
-    // Busca o caminho da imagem associada à vacina
-    $sql = "SELECT url_imagem FROM Vacina WHERE id = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param('i', $id);
-    $stmt->execute();
-    $result = $stmt->get_result();
+function excluirVacina($conn, $idVacina, $idPostoAdmin, $isAdminPrefeitura) {
+    // Busca o ID do posto e o caminho da imagem associado à vacina
+    $sqlVacina = "SELECT id_posto, url_imagem FROM Vacina WHERE id = ?";
+    $stmtVacina = $conn->prepare($sqlVacina);
+    $stmtVacina->bind_param('i', $idVacina);
+    $stmtVacina->execute();
+    $resultVacina = $stmtVacina->get_result();
 
-    if ($result->num_rows > 0) {
-        $vacina = $result->fetch_assoc();
+    if ($resultVacina->num_rows > 0) {
+        $vacina = $resultVacina->fetch_assoc();
+        $idPostoVacina = $vacina['id_posto'];
         $caminhoImagem = $vacina['url_imagem'];
 
-        // Excluir o arquivo de imagem
-        if (file_exists($caminhoImagem)) {
-            unlink($caminhoImagem); // Remove a imagem do servidor
-        }
+        // Verificar se o administrador tem permissão para excluir
+        if ($isAdminPrefeitura || $idPostoAdmin === $idPostoVacina) {
+            // Excluir o arquivo de imagem
+            if (file_exists($caminhoImagem)) {
+                unlink($caminhoImagem); // Remove a imagem do servidor
+            }
 
-        // Excluir a vacina do banco de dados
-        $sqlDelete = "DELETE FROM Vacina WHERE id = ?";
-        $stmtDelete = $conn->prepare($sqlDelete);
-        $stmtDelete->bind_param('i', $id);
-        return $stmtDelete->execute();
+            // Excluir a vacina do banco de dados
+            $sqlDelete = "DELETE FROM Vacina WHERE id = ?";
+            $stmtDelete = $conn->prepare($sqlDelete);
+            $stmtDelete->bind_param('i', $idVacina);
+            return $stmtDelete->execute();
+        } else {
+            // Administrador não tem permissão para excluir esta vacina
+            return false;
+        }
     }
 
     return false; // Retorna falso se a vacina não foi encontrada
@@ -65,7 +71,7 @@ function excluirVacina($conn, $id) {
 // Verificar se a requisição AJAX foi feita para excluir a vacina
 if (isset($_POST['excluir_id'])) {
     $id = $_POST['excluir_id'];
-    if (excluirVacina($conn, $id)) {
+    if (excluirVacina($conn, $id, $_SESSION['id_posto'], $_SESSION['admin_prefeitura'])) {
         echo 'Vacina removida com sucesso!';
     } else {
         echo 'Erro ao remover a vacina.';
